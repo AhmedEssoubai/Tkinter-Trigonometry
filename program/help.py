@@ -58,7 +58,7 @@ class Help:
         self.create_text("The cosine, cotangent, and cosecant are so named because they are respectively the sine, "
                          "tangent, and secant of the complementary angle abbreviated to \"co-\"."
                          "\n\nWith these functions, one can answer virtually all questions about arbitrary triangles "
-                         "by using the law of sines and the law of cosines.[31] These laws can be used to compute the "
+                         "by using the law of sines and the law of cosines. These laws can be used to compute the "
                          "remaining angles and sides of any triangle as soon as two sides and their included angle or "
                          "two angles and a side or three sides are known.",
                          font_size=12).pack(fill=tk.X)

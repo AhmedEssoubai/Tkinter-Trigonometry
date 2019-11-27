@@ -20,6 +20,7 @@ class Circle:
         self._draw_quadrants(radius / 3)
         self._draw_angles(radius / 10)
         self._target_o = 0
+        self.in_radians = False
         self.angle = 0
         self.cos = 1
         self.sin = 0
@@ -134,7 +135,8 @@ class Circle:
                 self._draw_oval(self._center_x + cos * self._radius, self._center_y - sin * self._radius, color=color,
                                 radius=res.LITTLE_OVAL_RADIUS / 1.7))
             self._angles.append(self._canvas.create_text(self._center_x + cos * (self._radius - space),
-                                                         self._center_y - sin * (self._radius - space), text=angle,
+                                                         self._center_y - sin * (self._radius - space),
+                                                         text=str(angle) + "°",
                                                          font=(res.FONT_FAMILY, 10),
                                                          fill=color))
             angle += jump
@@ -219,11 +221,17 @@ class Circle:
 
     # Draw P point (Change coordinates)
     def _draw_p(self):
-        # Convert degree to radian
-        rad = self.angle * math.pi / 180
+        rad = self.angle
+        # Convert degree to radian if needed
+        if not self.in_radians:
+            rad = self.angle * math.pi / 180
         # Calculate the value of Cosθ and Sinθ and Tanθ
         self.cos = math.cos(rad)
+        if rad == math.pi / 2 or rad == math.pi * 3 / 2:
+            self.cos = 0
         self.sin = math.sin(rad)
+        if rad == math.pi:
+            self.sin = 0
         self.tan = math.tan(rad)
         # Find the coords of P
         px = self._center_x + self.cos * self._radius
@@ -239,8 +247,8 @@ class Circle:
         # Change sin dash line coords
         self._canvas.coords(self._p_shapes[4], px, py, self._center_x, py)
         # Change tan line coords
-        if self.angle == 90 or self.angle == 270:
-            if self.angle == 90:
+        if rad == math.pi / 2 or rad == math.pi * 3 / 2:
+            if rad == math.pi / 2:
                 tx = self._center_x + self._radius * 5
             else:
                 tx = self._center_x - self._radius * 5
@@ -254,32 +262,35 @@ class Circle:
         self._canvas.coords(self._p_shapes[6], px - res.LITTLE_OVAL_RADIUS, py - res.LITTLE_OVAL_RADIUS,
                             px + res.LITTLE_OVAL_RADIUS, py + res.LITTLE_OVAL_RADIUS)
         # Change angle
-        self._canvas.itemconfigure(self._p_shapes[7], start=0, extent=self.angle)
+        a = self.angle
+        if self.in_radians:
+            a = self.angle * 180 / math.pi
+        self._canvas.itemconfigure(self._p_shapes[7], start=0, extent=a)
         # Change P coordinates and text
         self.tan = str(self.tan)[:5]
-        if self.angle == 180:
+        if rad == math.pi:
             self.tan = str(0)
         else:
-            if self.angle == 90 or self.angle == 270:
+            if rad == math.pi / 2 or rad == math.pi * 3 / 2:
                 self.tan = "undefined"
         self._canvas.coords(self._p_shapes[8], px + 80 * Circle.sing(self.cos), py - 20 * Circle.sing(self.sin))
         self._canvas.itemconfig(self._p_shapes[8],
                                 text="P(" + str(self.cos)[:5] + ", " + str(self.sin)[:5] + ", " + self.tan + ")")
         # Change the coordinates and text of Angle
-        self._canvas.itemconfig(self._p_shapes[9], text="θ = " + str(math.floor(self.angle)) + "°")
-        r = (self.angle - 30) * math.pi / 180
+        self._set_angle_to_ui()
+        r = rad - 30 * math.pi / 180
         x = self._center_x + math.cos(r) * self._radius / 3
         y = self._center_y - math.sin(r) * self._radius / 3
         self._canvas.coords(self._p_shapes[9],  x, y)
         # Change the coordinates and text of Cos
-        self._canvas.itemconfig(self._p_shapes[10], text="cos θ\n≈ " + str(self.tan)[:5])
+        self._canvas.itemconfig(self._p_shapes[10], text="cos θ\n≈ " + str(self.cos)[:5])
         x = self._center_x + (px - self._center_x) / 2
         y = self._center_y + 30
         if self.sin < 0:
             y = self._center_y - 30
         self._canvas.coords(self._p_shapes[10],  x, y)
         # Change the coordinates and text of Sin
-        self._canvas.itemconfig(self._p_shapes[11], text="sin θ\n≈ " + str(self.tan)[:5])
+        self._canvas.itemconfig(self._p_shapes[11], text="sin θ\n≈ " + str(self.sin)[:5])
         y = self._center_y + (py - self._center_y) / 2
         x = self._center_x - 50
         if self.cos < 0:
@@ -302,6 +313,13 @@ class Circle:
             return -1
         return 1
 
+    # Set the angle text to angle UI
+    def _set_angle_to_ui(self):
+        angle_text = "θ = " + str(math.floor(self.angle)) + "°"
+        if self.in_radians:
+            angle_text = "θ = " + str(self.angle)[:5]
+        self._canvas.itemconfig(self._p_shapes[9], text=angle_text)
+
     # On mouse click
     def mouse_clicked(self, event):
         mouse_x, mouse_y = event.x, event.y
@@ -309,17 +327,25 @@ class Circle:
         hypotenuse = math.sqrt(math.pow(mouse_x - self._center_x, 2) + math.pow(mouse_y - self._center_y, 2))
         adjacent = math.sqrt(math.pow(mouse_x - self._center_x, 2) + math.pow(mouse_y - mouse_y, 2))
 
-        cos = adjacent / hypotenuse
+        if hypotenuse == 0:
+            cos = 1
+        else:
+            cos = adjacent / hypotenuse
 
-        angle = math.floor((math.acos(cos)) * 180 / math.pi)
+        angle = math.acos(cos)
+        half = math.pi
+
+        if not self.in_radians:
+            angle = math.floor(angle * 180 / math.pi)
+            half = 180
 
         if mouse_y > self._center_y:
             if mouse_x > self._center_x:
-                angle = 180 - angle
-            angle = angle + 180
+                angle = half - angle
+            angle = angle + half
         else:
             if mouse_x < self._center_x:
-                angle = 180 - angle
+                angle = half - angle
 
         # Fire on target angle changed event
         self._on_target_angle_changed(angle)
@@ -336,12 +362,15 @@ class Circle:
 
     # An update function execute every 10 ms
     def _update(self):
-        mv = (self._dir == 1 and self._target_o > self.angle + self._speed) or \
-             (self._dir == -1 and self._target_o < self.angle - self._speed)
+        sp = self._speed
+        if self.in_radians:
+            sp = sp / 60
+        mv = (self._dir == 1 and self._target_o > self.angle + sp) or \
+             (self._dir == -1 and self._target_o < self.angle - sp)
         if mv:
-            self.angle += self._speed * self._dir
+            self.angle += sp * self._dir
         else:
-            _dir = 0
+            self._dir = 0
             self.angle = self._target_o
         if self._speed * 1.05 < res.MAX_SPEED:
             self._speed = self._speed * 1.05
@@ -353,7 +382,10 @@ class Circle:
 
     # Go to target θ in a animation
     def to_o(self, o):
-        self._target_o = o % 360
+        if self.in_radians:
+            self._target_o = o % (math.pi * 2)
+        else:
+            self._target_o = o % 360
         # Draw directly if animation deactivated
         if not self._animation:
             self.angle = self._target_o
@@ -381,3 +413,18 @@ class Circle:
     # Activate or deactivate animation
     def animation_option(self, active):
         self._animation = active
+
+    # Change the angle unit from or to radians
+    def unit_option(self, active):
+        current_in_radians = self.in_radians
+        self.in_radians = not active
+        if current_in_radians and not self.in_radians:
+            self.angle = self.angle * 180 / math.pi
+            self._target_o = self._target_o * 180 / math.pi
+        else:
+            if not current_in_radians and self.in_radians:
+                self.angle = self.angle * math.pi / 180
+                self._target_o = self._target_o * math.pi / 180
+        self._set_angle_to_ui()
+        self._on_angle_changed()
+        self._on_target_angle_changed(self._target_o)
