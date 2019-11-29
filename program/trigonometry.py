@@ -86,7 +86,7 @@ class Trigonometry:
                                   font=(res.FONT_FAMILY, 12))
         self._tb_angle.insert(0, 0)
         self._tb_angle.pack()
-        tk.Button(panel, text="Draw", fg="white", bg=res.COLOR_MAIN, bd=1, relief=tk.SOLID,
+        tk.Button(panel, text="GO", fg="white", bg=res.COLOR_MAIN, bd=1, relief=tk.SOLID,
                   font=(res.FONT_FAMILY, 12), command=lambda: self.on_draw_p(self._tb_angle.get())).\
             pack(side=tk.LEFT, padx=(20, 20))
 

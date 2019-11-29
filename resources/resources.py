@@ -35,8 +35,8 @@ COLOR_WARNING = "#ffb665"
 
 # - - Others
 # The start speed of angle animation
-MIN_SPEED = 1
+MIN_SPEED = 3
 # The max speed of angle animation
-MAX_SPEED = 4
+MAX_SPEED = 5
 
 FONT_FAMILY = "MS Sans Serif"

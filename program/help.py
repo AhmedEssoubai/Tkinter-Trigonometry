@@ -1,6 +1,7 @@
 import tkinter as tk
 from PIL import ImageTk
 import resources.resources as res
+import webbrowser
 
 
 class Help:
@@ -62,15 +63,28 @@ class Help:
                          "remaining angles and sides of any triangle as soon as two sides and their included angle or "
                          "two angles and a side or three sides are known.",
                          font_size=12).pack(fill=tk.X)
+        self.create_text("For more information :",
+                         font_size=12).pack(fill=tk.X)
+        self.create_hyperlink("Wikipedia", "https://en.wikipedia.org/wiki/Trigonometry").pack(fill=tk.X)
+        self.create_hyperlink("Maths is fun", "https://www.mathsisfun.com/algebra/trigonometry.html").pack(fill=tk.X)
+        self.create_hyperlink("khan academy", "https://www.khanacademy.org/math/trigonometry").pack(fill=tk.X)
+        self.create_hyperlink("Skills you need", "https://www.skillsyouneed.com/num/trigonometry.html").pack(fill=tk.X)
+        self.create_hyperlink("Britannica", "https://www.britannica.com/science/trigonometry").pack(fill=tk.X)
         self.create_text("Developed by Ahmed Essoubai and Moubarak Najih, ENSA Tanger MBISD01 2019",
                          font_size=12,
                          color=res.COLOR_DARK_BG).pack(fill=tk.X)
 
     # Create text UI
     def create_text(self, text, color=res.COLOR_LINES_COLOR, font_size=18):
-        text = tk.Label(self.page, text=text, bg=res.COLOR_LIGHT_BG, wraplength=1000, pady=10, anchor=tk.NW,
-                        justify=tk.LEFT, fg=color, font=(res.FONT_FAMILY, font_size))
-        return text
+        lb = tk.Label(self.page, text=text, bg=res.COLOR_LIGHT_BG, wraplength=1000, pady=10, anchor=tk.NW,
+                      justify=tk.LEFT, fg=color, font=(res.FONT_FAMILY, font_size))
+        return lb
+
+    # Create hyperlink UI
+    def create_hyperlink(self, text, link, font_size=12):
+        hl = self.create_text(text, res.COLOR_MAIN, font_size)
+        hl.bind("<Button-1>", lambda e: webbrowser.open_new(link))
+        return hl
 
     # Create image UI
     def create_image(self, location):
